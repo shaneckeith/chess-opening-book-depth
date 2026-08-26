@@ -1,0 +1,19 @@
+# Raw source data (30GB+ .zst archive - never commit)
+*.zst
+*.pgn
+
+# Large extracted/intermediate datasets - ignored by default
+*.csv
+!summary_*.csv
+
+# Python environment
+venv/
+__pycache__/
+*.pyc
+
+# OS/editor junk
+.DS_Store
+*.swp
+
+# Session logs (raw terminal captures - keep RUNLOG.md tracked instead)
+session*.log
