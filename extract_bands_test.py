@@ -1,30 +1,17 @@
 """
-extract_bands_test.py
+extract_bands_test.py (v2 - raw text buffering)
 
-Streams a Lichess .zst PGN export and, for a ~10% random sample of eligible
-rapid-rated games, buckets each game into one of four rating bands and
-computes book_depth_plies using the same prefix-matching logic as
-book_depth.py. Writes one output CSV per band.
+Streams a .zst PGN export. For each game, reads the raw text block
+(headers + movetext) into memory as plain strings first - no python-chess
+involved. Checks rapid/band/termination via simple string search on the
+header lines. Only games that pass ALL cheap filters AND the sampling
+draw get parsed by chess.pgn (via io.StringIO on the buffered text) for
+book-depth scoring. This avoids python-chess parsing entirely for the
+~90%+ of games that get filtered out or sampled away.
 
-Sampling method: since a .zst file can't be seek-sampled (it must be
-decompressed sequentially, start to finish), each game that passes the
-non-random filters gets an independent Bernoulli trial - keep it with
-probability SAMPLE_RATE. Over millions of games this converges to ~10%
-of eligible games.
-
-Band assignment: BOTH players' ratings must fall in the same band for the
-game to be included. Games with either player >= 2000, or with players in
-different bands, are skipped entirely.
-    under1000   :    0 -  999
-    1000_1399   : 1000 - 1399
-    1400_1799   : 1400 - 1799
-    1800_1999   : 1800 - 1999
-
-Rapid definition (Lichess formula): base + 40*increment must fall in
-[480, 1499] seconds. "Abandoned" terminations are excluded; "Time forfeit"
-is kept as a legitimate outcome.
+(v1's read_headers()+seek-back approach was abandoned: the zstd streaming
+reader is not seekable, which the seek-based skip pattern requires.)
 """
-
 import zstandard as zstd
 import io
 import chess.pgn
@@ -33,9 +20,10 @@ import csv
 import random
 import sys
 import time
+import re
 
 SAMPLE_RATE = 0.10
-random.seed(42)  # fixed seed -> reproducible test run
+random.seed(42)
 
 BANDS = [
     ("under1000", 0, 999),
@@ -44,15 +32,20 @@ BANDS = [
     ("1800_1999", 1800, 1999),
 ]
 
+RE_WHITEELO = re.compile(r'\[WhiteElo "(\d+)"\]')
+RE_BLACKELO = re.compile(r'\[BlackElo "(\d+)"\]')
+RE_TIMECONTROL = re.compile(r'\[TimeControl "([^"]*)"\]')
+RE_TERMINATION = re.compile(r'\[Termination "([^"]*)"\]')
+
+print("Loading ECO lookup table...", flush=True)
 with open("eco_lookup.pkl", "rb") as fh:
     lookup = pickle.load(fh)
 KNOWN_PREFIXES = lookup["prefixes"]
 FULL_LINES = lookup["full_lines"]
+print(f"Loaded {len(FULL_LINES):,} known lines, {len(KNOWN_PREFIXES):,} prefixes.", flush=True)
 
 
 def book_depth_for_game(game):
-    """Same logic as book_depth.py: walk mainline SAN moves, track deepest
-    ply that still matches a known opening prefix."""
     board = game.board()
     san_moves = []
     depth = 0
@@ -73,24 +66,18 @@ def book_depth_for_game(game):
 
 
 def is_rapid(time_control):
-    """Lichess rapid definition: base + 40*increment in [480, 1499] seconds."""
     if not time_control or time_control == "-":
         return False
     try:
         base_str, inc_str = time_control.split("+")
-        base = int(base_str)
-        inc = int(inc_str)
+        return 480 <= int(base_str) + 40 * int(inc_str) <= 1499
     except (ValueError, AttributeError):
         return False
-    estimated = base + 40 * inc
-    return 480 <= estimated <= 1499
 
 
 def get_band(white_elo, black_elo):
-    """Return the band name if both players fall in the SAME band, else None."""
     try:
-        w = int(white_elo)
-        b = int(black_elo)
+        w, b = int(white_elo), int(black_elo)
     except (TypeError, ValueError):
         return None
     for band_name, low, high in BANDS:
@@ -99,15 +86,26 @@ def get_band(white_elo, black_elo):
     return None
 
 
-def process_zst(zst_path, sample_rate=SAMPLE_RATE):
-    band_files = {}
-    band_writers = {}
-    band_counts = {name: 0 for name, _, _ in BANDS}
+def read_game_blocks(text_stream):
+    """Yield raw text blocks, one per game, by watching for the start of a
+    new [Event tag - NOT blank lines, since a blank line also separates
+    each game's own headers from its movetext (so blank-line splitting
+    double-counts every game). Pure text - no python-chess."""
+    lines = []
+    for line in text_stream:
+        if line.startswith("[Event ") and lines:
+            yield "".join(lines)
+            lines = []
+        lines.append(line)
+    if lines:
+        yield "".join(lines)
 
-    for band_name, _, _ in BANDS:
-        f = open(f"sample_{band_name}.csv", "w", newline="", encoding="utf-8")
-        band_files[band_name] = f
-        band_writers[band_name] = None  # created lazily once we know fieldnames
+
+def process_zst(zst_path, sample_rate=SAMPLE_RATE):
+    print(f"Opening {zst_path} ...", flush=True)
+    band_files = {name: open(f"sample_{name}.csv", "w", newline="", encoding="utf-8") for name, _, _ in BANDS}
+    band_writers = {name: None for name, _, _ in BANDS}
+    band_counts = {name: 0 for name, _, _ in BANDS}
 
     dctx = zstd.ZstdDecompressor()
     total_games = 0
@@ -117,64 +115,67 @@ def process_zst(zst_path, sample_rate=SAMPLE_RATE):
     with open(zst_path, "rb") as compressed:
         with dctx.stream_reader(compressed) as reader:
             text_stream = io.TextIOWrapper(reader, encoding="utf-8")
-            while True:
-                game = chess.pgn.read_game(text_stream)
-                if game is None:
-                    break
+            print("Stream opened. Beginning scan...", flush=True)
+
+            for block in read_game_blocks(text_stream):
                 total_games += 1
 
-                h = game.headers
+                m_white = RE_WHITEELO.search(block)
+                m_black = RE_BLACKELO.search(block)
+                m_tc = RE_TIMECONTROL.search(block)
+                m_term = RE_TERMINATION.search(block)
 
-                if h.get("Termination") == "Abandoned":
-                    continue
-                if not is_rapid(h.get("TimeControl")):
-                    continue
+                white_elo = m_white.group(1) if m_white else None
+                black_elo = m_black.group(1) if m_black else None
+                time_control = m_tc.group(1) if m_tc else None
+                termination = m_term.group(1) if m_term else None
 
-                band_name = get_band(h.get("WhiteElo"), h.get("BlackElo"))
-                if band_name is None:
-                    continue
+                if termination == "Abandoned":
+                    pass
+                elif not is_rapid(time_control):
+                    pass
+                else:
+                    band_name = get_band(white_elo, black_elo)
+                    if band_name is not None and random.random() < sample_rate:
+                        game = chess.pgn.read_game(io.StringIO(block))
+                        if game is not None:
+                            depth, eco, name = book_depth_for_game(game)
+                            h = game.headers
+                            row = {
+                                "white_elo": h.get("WhiteElo"),
+                                "black_elo": h.get("BlackElo"),
+                                "result": h.get("Result"),
+                                "termination": h.get("Termination"),
+                                "time_control": h.get("TimeControl"),
+                                "book_depth_plies": depth,
+                                "matched_eco": eco,
+                                "matched_name": name,
+                                "header_eco": h.get("ECO"),
+                                "header_opening": h.get("Opening"),
+                            }
+                            if band_writers[band_name] is None:
+                                writer = csv.DictWriter(band_files[band_name], fieldnames=row.keys())
+                                writer.writeheader()
+                                band_writers[band_name] = writer
+                            band_writers[band_name].writerow(row)
+                            band_counts[band_name] += 1
+                            kept_games += 1
 
-                if random.random() >= sample_rate:
-                    continue
-
-                depth, eco, name = book_depth_for_game(game)
-
-                row = {
-                    "white_elo": h.get("WhiteElo"),
-                    "black_elo": h.get("BlackElo"),
-                    "result": h.get("Result"),
-                    "termination": h.get("Termination"),
-                    "time_control": h.get("TimeControl"),
-                    "book_depth_plies": depth,
-                    "matched_eco": eco,
-                    "matched_name": name,
-                    "header_eco": h.get("ECO"),
-                    "header_opening": h.get("Opening"),
-                }
-
-                if band_writers[band_name] is None:
-                    writer = csv.DictWriter(band_files[band_name], fieldnames=row.keys())
-                    writer.writeheader()
-                    band_writers[band_name] = writer
-                band_writers[band_name].writerow(row)
-
-                band_counts[band_name] += 1
-                kept_games += 1
-
-                if total_games % 100000 == 0:
+                if total_games % 25000 == 0:
                     elapsed = time.time() - start
-                    print(f"  ...scanned {total_games:,} games, kept {kept_games:,} "
-                          f"({elapsed:.0f}s elapsed)", flush=True)
+                    rate = total_games / elapsed if elapsed > 0 else 0
+                    print(f"  ...scanned {total_games:,} games, kept {kept_games:,}, "
+                          f"{elapsed:.0f}s elapsed, {rate:.0f} games/sec", flush=True)
 
     for f in band_files.values():
         f.close()
-
     return total_games, kept_games, band_counts
 
 
 if __name__ == "__main__":
     infile = sys.argv[1] if len(sys.argv) > 1 else "lichess_db_standard_rated_2023-06.pgn.zst"
-    print(f"Starting band extraction (test run, {SAMPLE_RATE:.0%} sample) from {infile}")
+    print(f"=== Process started: band extraction (test run, {SAMPLE_RATE:.0%} sample) ===", flush=True)
+    print(f"Input file: {infile}", flush=True)
     total, kept, counts = process_zst(infile)
     print("\n=== DONE ===")
     print(f"Total games scanned: {total:,}")
