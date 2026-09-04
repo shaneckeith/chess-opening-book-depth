@@ -1,0 +1,82 @@
+=== Analyzing results_under1000.csv ===
+
+Total rows loaded: 868,075
+Rows after dropping draws/incomplete: 813,054
+
+=== Did the player who broke book first win or lose? ===
+breaker_won
+0    0.52484
+1    0.47516
+Name: proportion, dtype: float64
+Breaker win rate: 0.4752
+
+============================================================
+PRIMARY ANALYSIS (per Task 1 design)
+Predictor: book_depth_plies (sole predictor)
+Outcome:   breaker_won
+============================================================
+
+Pearson correlation (book_depth_plies vs breaker_won):
+  r = 0.0080, p-value = 0.000000
+
+Logistic regression (book_depth_plies -> breaker_won):
+  Pseudo R2 = 0.0000
+  Log-Likelihood = -562536.52
+  LL-Null        = -562562.35
+
+Likelihood ratio test (book_depth_plies model vs. null model):
+  LR statistic = 51.6535, p-value = 0.000000
+  (p < 0.05 -> book_depth_plies explains outcome better than chance)
+
+=== Primary model summary ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:               813054
+Model:                          Logit   Df Residuals:                   813052
+Method:                           MLE   Df Model:                            1
+Date:                Tue, 01 Sep 2026   Pseudo R-squ.:               4.591e-05
+Time:                        00:05:31   Log-Likelihood:            -5.6254e+05
+converged:                       True   LL-Null:                   -5.6256e+05
+Covariance Type:            nonrobust   LLR p-value:                 6.621e-13
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+const               -0.1344      0.005    -25.115      0.000      -0.145      -0.124
+book_depth_plies     0.0093      0.001      7.187      0.000       0.007       0.012
+====================================================================================
+
+============================================================
+SECONDARY / EXPLORATORY ANALYSIS
+Not part of the approved Task 1 design. Kept for Task 3
+discussion: does book depth's effect hold up independently
+of rating, or is it just proxying for rating?
+============================================================
+
+Correlation (avg rating vs book depth): 0.1099
+
+Average book depth by 100-point rating band:
+                 mean   count
+rating_band                  
+(400, 500]   2.941400    1314
+(500, 600]   3.224496   12263
+(600, 700]   3.392645   55121
+(700, 800]   3.576645  147498
+(800, 900]   3.752434  287414
+(900, 1000]  3.937289  309433
+
+Correlation between book_depth_plies and breaker_rating_diff: 0.0072
+(Near zero = the two predictors aren't entangled with each other)
+
+=== Three-model comparison ===
+Model 1 (rating only):      Log-Likelihood=-549971.05  Pseudo R2=0.0224
+Model 2 (book depth only):  Log-Likelihood=-562536.52  Pseudo R2=0.0000
+Model 3 (both):             Log-Likelihood=-549950.84  Pseudo R2=0.0224
+
+Incremental LRT (does book_depth add anything BEYOND rating, once rating is known?):
+  LR statistic = 40.4352, p-value = 0.000000
+  (this is a different question from the primary analysis above -
+   it's asking about book_depth's marginal value on top of rating,
+   not book_depth's standalone relationship to outcome)
+
+
+=== DONE === (output saved to results_under1000_analysis_log.txt)

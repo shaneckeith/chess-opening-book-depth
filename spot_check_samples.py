@@ -60,7 +60,7 @@ def check_band(name, low, high):
     bad_black = df[(df["black_elo"] < low) | (df["black_elo"] > high)]
     print(f"white_elo range in file: {df['white_elo'].min()} - {df['white_elo'].max()}")
     print(f"black_elo range in file: {df['black_elo'].min()} - {df['black_elo'].max()}")
-    if len(bad_white) or len(bad_black) > 0:
+    if len(bad_white) > 0 or len(bad_black) > 0:
         print(f"  !! {len(bad_white)} rows with white_elo out of band, "
               f"{len(bad_black)} rows with black_elo out of band")
     else:

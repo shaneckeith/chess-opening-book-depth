@@ -1,0 +1,78 @@
+Loaded full_under1000_enriched.csv: 808,801 rows
+Loaded full_1000_1399_enriched.csv: 3,063,662 rows
+Loaded full_1400_1799_enriched.csv: 4,630,322 rows
+Loaded full_1800_1999_enriched.csv: 1,412,684 rows
+
+Pooled total (before cleaning): 9,915,469 rows
+Pooled total (after dropping missing): 9,915,469 rows
+
+Fitting main effects model (this may take a minute on ~10.4M rows)...
+
+=== MAIN EFFECTS MODEL (single depth slope for all bands) ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:              9915469
+Model:                          Logit   Df Residuals:                  9915464
+Method:                           MLE   Df Model:                            4
+Date:                Fri, 04 Sep 2026   Pseudo R-squ.:               0.0001070
+Time:                        01:32:47   Log-Likelihood:            -6.8675e+06
+converged:                       True   LL-Null:                   -6.8682e+06
+Covariance Type:            nonrobust   LLR p-value:                     0.000
+========================================================================================
+                           coef    std err          z      P>|z|      [0.025      0.975]
+----------------------------------------------------------------------------------------
+Intercept               -0.0521      0.002    -20.936      0.000      -0.057      -0.047
+C(band)[T.1000_1399]     0.0239      0.003      9.533      0.000       0.019       0.029
+C(band)[T.1400_1799]     0.0441      0.002     18.196      0.000       0.039       0.049
+C(band)[T.1800_1999]     0.0517      0.003     18.392      0.000       0.046       0.057
+book_depth_plies        -0.0099      0.000    -33.454      0.000      -0.010      -0.009
+========================================================================================
+
+Fitting interaction model...
+
+=== INTERACTION MODEL (depth slope allowed to vary by band) ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:              9915469
+Model:                          Logit   Df Residuals:                  9915461
+Method:                           MLE   Df Model:                            7
+Date:                Fri, 04 Sep 2026   Pseudo R-squ.:               0.0001128
+Time:                        01:33:47   Log-Likelihood:            -6.8674e+06
+converged:                       True   LL-Null:                   -6.8682e+06
+Covariance Type:            nonrobust   LLR p-value:                     0.000
+=========================================================================================================
+                                            coef    std err          z      P>|z|      [0.025      0.975]
+---------------------------------------------------------------------------------------------------------
+Intercept                                -0.0818      0.005    -15.087      0.000      -0.092      -0.071
+C(band)[T.1000_1399]                      0.0646      0.006     10.650      0.000       0.053       0.076
+C(band)[T.1400_1799]                      0.0765      0.006     13.106      0.000       0.065       0.088
+C(band)[T.1800_1999]                      0.0660      0.007      9.994      0.000       0.053       0.079
+book_depth_plies                         -0.0020      0.001     -1.549      0.121      -0.005       0.001
+book_depth_plies:C(band)[T.1000_1399]    -0.0104      0.001     -7.279      0.000      -0.013      -0.008
+book_depth_plies:C(band)[T.1400_1799]    -0.0084      0.001     -6.136      0.000      -0.011      -0.006
+book_depth_plies:C(band)[T.1800_1999]    -0.0048      0.001     -3.221      0.001      -0.008      -0.002
+=========================================================================================================
+
+=== LIKELIHOOD RATIO TEST: does the DEPTH EFFECT vary by band? ===
+Main model Log-Likelihood:        -6867461.58
+Interaction model Log-Likelihood: -6867422.39
+Degrees of freedom difference:    3.0
+LR statistic:                     78.3742
+p-value:                          0.000000
+(p < 0.05 -> the depth effect DOES significantly vary across bands)
+
+=== CONTINGENCY TABLE: band vs breaker_won (counts) ===
+breaker_won        0        1
+band                         
+under1000     422470   386331
+1000_1399    1586393  1477269
+1400_1799    2377469  2252853
+1800_1999     723755   688929
+
+=== CHI-SQUARE TEST: does breaker WIN RATE vary by band? ===
+Chi-square statistic: 350.6398
+Degrees of freedom:   3
+p-value:              0.0000000000
+(p < 0.05 -> breaker win rate DOES significantly differ across bands)
+
+=== DONE ===
