@@ -5,6 +5,9 @@
 # Large extracted/intermediate datasets - ignored by default
 *.csv
 !summary_*.csv
+!band_coefficient_verification.csv
+!linearity_check_by_color.csv
+!logit_linearity_check_by_color_log.txt
 
 # Python environment
 venv/

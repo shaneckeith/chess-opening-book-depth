@@ -1,0 +1,15 @@
+Subset                                                 n         coef            p verdict                     
+under1000 - ALL (unsplit, original check)        807,733     0.002531     0.550740 Linearity holds (p >= .05)  
+under1000 - White broke book (even depth)        416,003    -0.030040     0.000007 LINEARITY VIOLATED (p < .05)
+under1000 - Black broke book (odd depth)         391,730     0.023273     0.000024 LINEARITY VIOLATED (p < .05)
+1000_1399 - ALL (unsplit, original check)      3,062,201    -0.019733     0.000000 LINEARITY VIOLATED (p < .05)
+1000_1399 - White broke book (even depth)      1,570,036    -0.039552     0.000000 LINEARITY VIOLATED (p < .05)
+1000_1399 - Black broke book (odd depth)       1,492,165    -0.004496     0.065162 Linearity holds (p >= .05)  
+1400_1799 - ALL (unsplit, original check)      4,629,031    -0.008208     0.000000 LINEARITY VIOLATED (p < .05)
+1400_1799 - White broke book (even depth)      2,402,251    -0.025007     0.000000 LINEARITY VIOLATED (p < .05)
+1400_1799 - Black broke book (odd depth)       2,226,780     0.009383     0.000000 LINEARITY VIOLATED (p < .05)
+1800_1999 - ALL (unsplit, original check)      1,412,393    -0.005039     0.016053 LINEARITY VIOLATED (p < .05)
+1800_1999 - White broke book (even depth)        719,190    -0.014304     0.000001 LINEARITY VIOLATED (p < .05)
+1800_1999 - Black broke book (odd depth)         693,203     0.005066     0.092093 Linearity holds (p >= .05)  
+
+Saved full results to linearity_check_by_color.csv
