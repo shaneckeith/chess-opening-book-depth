@@ -196,3 +196,128 @@ extraction)
   - Formally answers Q3: both the win-rate disadvantage (Q1) and the
     depth-penalty magnitude (Q2a) vary significantly by rating band,
     with formal statistical support rather than just a visible trend.
+## 2026-09-15 — logit_linearity_check.py (Box-Tidwell linearity check, full population, all 4 bands)
+
+- Input: full_under1000_enriched.csv, full_1000_1399_enriched.csv,
+full_1400_1799_enriched.csv, full_1800_1999_enriched.csv
+- Purpose: formally verify the logistic regression's linearity-in-the-logit
+assumption for the primary model (breaker_won ~ book_depth_plies),
+rather than relying only on the visual milestone-breakdown check
+- Method: Box-Tidwell test (adds a book_depth_plies * log(book_depth_plies)
+interaction term; a significant interaction indicates nonlinearity),
+run per band on the exact-integer depth distribution (values with
+n < 500 dropped from the plot only, not from the test)
+- Status: DONE.
+  * under1000: coefficient 0.002531, p = 0.551 — linearity holds
+  * 1000_1399: coefficient -0.019733, p < 0.001 — LINEARITY VIOLATED
+  * 1400_1799: coefficient -0.008208, p < 0.001 — LINEARITY VIOLATED
+  * 1800_1999: coefficient -0.005039, p = 0.016 — LINEARITY VIOLATED
+- Investigated further same night (see breaker_color_check.py and
+logit_linearity_check_by_color.py below) since book_depth_plies parity
+was already known to structurally overlap with Book Breaker color.
+
+## 2026-09-15 — breaker_color_check.py (depth parity vs. Book Breaker color, full population, all 4 bands)
+
+- Input: full_*_enriched.csv, all four bands
+- Purpose: check whether book_depth_plies might be standing in for
+another structural property of the game
+- Method: crosstab of depth parity (even/odd) against the actual
+book_breaker column (white/black)
+- Status: DONE. 100.0000% agreement in every band — even book depth
+always corresponds to White breaking book, odd book depth always
+corresponds to Black breaking book, with zero exceptions across
+9,915,469 games. This is a structural/definitional certainty (odd
+plies are always White's move number, even plies always Black's, by
+the definition of ply), not an empirical correlation.
+
+## 2026-09-15 — breaker_color_effect.py (breaker_won ~ breaker_is_black, full population, all 4 bands)
+
+- Input: full_*_enriched.csv, all four bands
+- Purpose: given the 100% color/parity overlap above, quantify how much
+of the depth coefficient's apparent effect is actually a color effect
+- Method: separate logistic regression, breaker_won ~ breaker_is_black,
+fit per band
+- Status: DONE.
+  * under1000: n=808,801, White-breaks win rate 49.71%, Black-breaks
+win rate 45.70%, coefficient -0.1608, odds ratio 0.8515, p < 0.001
+  * 1000_1399: n=3,063,662, White-breaks win rate 50.49%, Black-breaks
+win rate 45.83%, coefficient -0.1865, odds ratio 0.8298, p < 0.001
+  * 1400_1799: n=4,630,322, White-breaks win rate 50.62%, Black-breaks
+win rate 46.53%, coefficient -0.1636, odds ratio 0.8491, p < 0.001
+  * 1800_1999: n=1,412,684, White-breaks win rate 50.76%, Black-breaks
+win rate 46.70%, coefficient -0.1623, odds ratio 0.8502 (p < 0.001,
+consistent with other bands)
+  * Breaking book as Black is associated with 15-17% lower odds of
+winning than breaking book as White, stable across all four bands.
+
+## 2026-09-15 — baseline_color_gap.py (baseline White vs. Black win rate, full population, all 4 bands, all games)
+
+- Input: full_*_enriched.csv, all four bands (NOT filtered to
+book-breaking status — this measures the ordinary White/Black win
+rate gap across every game, independent of who broke book)
+- Purpose: establish a baseline comparison point for the
+breaker_color_effect.py finding above
+- Status: DONE.
+  * under1000: n=808,801, White win rate 51.93%, Black win rate 48.07%,
+gap 3.87 points
+  * 1000_1399: n=3,063,662, White win rate 52.28%, Black win rate
+47.72%, gap 4.56 points
+  * 1400_1799: n=4,630,322, White win rate 51.99%, Black win rate
+48.01%, gap 3.98 points
+  * 1800_1999: n=1,412,684, White win rate 52.00%, Black win rate
+48.00%, gap 4.01 points
+  * FLAG FOR FOLLOW-UP (2026-09-19): converting both this baseline gap
+and the breaker_color_effect.py result to odds ratios shows they are
+nearly identical band-for-band (e.g. 1000_1399: baseline OR ~0.833
+vs. breaker-specific OR 0.830). This suggests the breaker_is_black
+effect may largely be re-detecting chess's ordinary White first-move
+advantage rather than a phenomenon specific to book-breaking. Needs
+resolution before finalizing E.3's framing of the color-confound
+limitation — see 2026-09-19 entry below.
+
+## 2026-09-19 — verify_band_coefficients.py (SE/CI verification for band_comparison.png, full population, all 4 bands)
+
+- Input: full_*_enriched.csv, all four bands
+- Purpose: verify the confidence-interval whiskers plotted in
+band_comparison.png against the model's actual standard errors, and
+confirm the driver of the visually narrow 1400-1799 whisker
+- Status: DONE.
+  * under1000: n=808,801, coef -0.00203, SE 0.00131, 95% CI
+[-0.00459, 0.00054], depth SD 1.700
+  * 1000_1399: n=3,063,662, coef -0.01241, SE 0.00056, 95% CI
+[-0.01352, -0.01130], depth SD 2.026
+  * 1400_1799: n=4,630,322, coef -0.01047, SE 0.00042, 95% CI
+[-0.01130, -0.00964], depth SD 2.202
+  * 1800_1999: n=1,412,684, coef -0.00679, SE 0.00068, 95% CI
+[-0.00813, -0.00545], depth SD 2.462
+  * Confirmed whiskers are correct. 1400-1799's narrow CI driven by a
+combination of the largest sample size AND the second-highest
+within-band variance in book_depth_plies, not a plotting error.
+
+## 2026-09-19 — logit_linearity_check_by_color.py (Box-Tidwell rerun split by Book Breaker color, full population, all 4 bands)
+
+- Input: full_*_enriched.csv, all four bands
+- Purpose: test whether the linearity violations found on 2026-09-15
+(logit_linearity_check.py) are an artifact of the color confound
+(breaker_color_check.py) rather than genuine curvature in the
+depth-outcome relationship
+- Method: Box-Tidwell interaction test rerun separately on White-broke
+(even depth) and Black-broke (odd depth) subsets within each band
+- Status: DONE. Color confound ruled out as the explanation.
+  * under1000: White coef -0.03004, p < 0.001 (violated); Black coef
+0.02327, p < 0.001 (violated) — opposite signs
+  * 1000_1399: White coef -0.03955, p < 0.001 (violated); Black coef
+-0.00450, p = 0.065 (holds)
+  * 1400_1799: White coef -0.02501, p < 0.001 (violated); Black coef
+0.00938, p < 0.001 (violated) — opposite signs
+  * 1800_1999: White coef -0.01430, p < 0.001 (violated); Black coef
+0.00507, p = 0.092 (holds)
+  * Curvature persists within color-split subsets in most cases, and
+two bands show opposite-signed coefficients between colors — the
+nonlinearity is a genuine, separate property of the depth-outcome
+relationship, not explained by the color confound. Working hypothesis:
+a given ply count does not carry equivalent theoretical weight across
+different openings (e.g. ply 3 in the Ruy Lopez vs. ply 3 in a less
+theory-dense opening), consistent with De Marzo & Servedio (2023)'s
+finding that raw ply-count classification of openings carries far
+less information than ECO-code classification.
