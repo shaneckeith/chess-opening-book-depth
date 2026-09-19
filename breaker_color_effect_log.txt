@@ -1,0 +1,92 @@
+
+=== Band: under1000 ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:               808801
+Model:                          Logit   Df Residuals:                   808799
+Method:                           MLE   Df Model:                            1
+Date:                Tue, 15 Sep 2026   Pseudo R-squ.:                0.001163
+Time:                        23:04:51   Log-Likelihood:            -5.5916e+05
+converged:                       True   LL-Null:                   -5.5981e+05
+Covariance Type:            nonrobust   LLR p-value:                4.810e-285
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+Intercept           -0.0117      0.003     -3.777      0.000      -0.018      -0.006
+breaker_is_black    -0.1608      0.004    -36.063      0.000      -0.170      -0.152
+====================================================================================
+
+White-breaks win rate: 49.7076%
+Black-breaks win rate: 45.6986%
+Coefficient (breaker_is_black): -0.160788
+Odds ratio (breaker_is_black): 0.851473
+p-value: 8.587433e-285
+
+=== Band: 1000_1399 ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:              3063662
+Model:                          Logit   Df Residuals:                  3063660
+Method:                           MLE   Df Model:                            1
+Date:                Tue, 15 Sep 2026   Pseudo R-squ.:                0.001565
+Time:                        23:05:03   Log-Likelihood:            -2.1183e+06
+converged:                       True   LL-Null:                   -2.1216e+06
+Covariance Type:            nonrobust   LLR p-value:                     0.000
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+Intercept            0.0194      0.002     12.178      0.000       0.016       0.023
+breaker_is_black    -0.1865      0.002    -81.453      0.000      -0.191      -0.182
+====================================================================================
+
+White-breaks win rate: 50.4857%
+Black-breaks win rate: 45.8319%
+Coefficient (breaker_is_black): -0.186544
+Odds ratio (breaker_is_black): 0.829822
+p-value: 0.000000e+00
+
+=== Band: 1400_1799 ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:              4630322
+Model:                          Logit   Df Residuals:                  4630320
+Method:                           MLE   Df Model:                            1
+Date:                Tue, 15 Sep 2026   Pseudo R-squ.:                0.001203
+Time:                        23:05:21   Log-Likelihood:            -3.2040e+06
+converged:                       True   LL-Null:                   -3.2078e+06
+Covariance Type:            nonrobust   LLR p-value:                     0.000
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+Intercept            0.0247      0.001     19.172      0.000       0.022       0.027
+breaker_is_black    -0.1636      0.002    -87.821      0.000      -0.167      -0.160
+====================================================================================
+
+White-breaks win rate: 50.6183%
+Black-breaks win rate: 46.5345%
+Coefficient (breaker_is_black): -0.163579
+Odds ratio (breaker_is_black): 0.849099
+p-value: 0.000000e+00
+
+=== Band: 1800_1999 ===
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:            breaker_won   No. Observations:              1412684
+Model:                          Logit   Df Residuals:                  1412682
+Method:                           MLE   Df Model:                            1
+Date:                Tue, 15 Sep 2026   Pseudo R-squ.:                0.001186
+Time:                        23:05:27   Log-Likelihood:            -9.7761e+05
+converged:                       True   LL-Null:                   -9.7877e+05
+Covariance Type:            nonrobust   LLR p-value:                     0.000
+====================================================================================
+                       coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------------
+Intercept            0.0303      0.002     12.832      0.000       0.026       0.035
+breaker_is_black    -0.1623      0.003    -48.172      0.000      -0.169      -0.156
+====================================================================================
+
+White-breaks win rate: 50.7564%
+Black-breaks win rate: 46.7029%
+Coefficient (breaker_is_black): -0.162335
+Odds ratio (breaker_is_black): 0.850156
+p-value: 0.000000e+00

@@ -1,0 +1,28 @@
+
+=== Band: under1000 ===
+Total games: 808801
+White win rate: 51.9326%
+Black win rate: 48.0674%
+Draw rate: 0.0000%
+Baseline White-Black win rate gap: 3.87 percentage points
+
+=== Band: 1000_1399 ===
+Total games: 3063662
+White win rate: 52.2793%
+Black win rate: 47.7207%
+Draw rate: 0.0000%
+Baseline White-Black win rate gap: 4.56 percentage points
+
+=== Band: 1400_1799 ===
+Total games: 4630322
+White win rate: 51.9876%
+Black win rate: 48.0124%
+Draw rate: 0.0000%
+Baseline White-Black win rate gap: 3.98 percentage points
+
+=== Band: 1800_1999 ===
+Total games: 1412684
+White win rate: 52.0031%
+Black win rate: 47.9969%
+Draw rate: 0.0000%
+Baseline White-Black win rate gap: 4.01 percentage points

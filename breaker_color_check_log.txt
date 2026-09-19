@@ -1,0 +1,36 @@
+
+=== Band: under1000 ===
+Agreement rate between depth-parity prediction and actual book_breaker: 100.0000%
+
+Crosstab (depth parity vs. actual breaker color):
+book_breaker       black   white
+book_depth_plies                
+even depth             0  417071
+odd depth         391730       0
+
+=== Band: 1000_1399 ===
+Agreement rate between depth-parity prediction and actual book_breaker: 100.0000%
+
+Crosstab (depth parity vs. actual breaker color):
+book_breaker        black    white
+book_depth_plies                  
+even depth              0  1571497
+odd depth         1492165        0
+
+=== Band: 1400_1799 ===
+Agreement rate between depth-parity prediction and actual book_breaker: 100.0000%
+
+Crosstab (depth parity vs. actual breaker color):
+book_breaker        black    white
+book_depth_plies                  
+even depth              0  2403542
+odd depth         2226780        0
+
+=== Band: 1800_1999 ===
+Agreement rate between depth-parity prediction and actual book_breaker: 100.0000%
+
+Crosstab (depth parity vs. actual breaker color):
+book_breaker       black   white
+book_depth_plies                
+even depth             0  719481
+odd depth         693203       0
