@@ -89,7 +89,7 @@ predictor), are documented in the capstone report and in `RUNLOG.md`.
 # 1. Set up environment
 python3 -m venv venv
 source venv/bin/activate
-pip install python-chess==1.11.2 zstandard==0.25.0 pandas statsmodels scipy matplotlib
+pip install -r requirements.txt
 
 # 2. Download the source data
 wget https://database.lichess.org/standard/lichess_db_standard_rated_2023-06.pgn.zst
@@ -130,4 +130,4 @@ bands.
 
 ## License
 
-Data used under Lichess's CC0 license. Code license: [to be added].
+Data used under Lichess's CC0 license. Code license: Code is released under the MIT License; see LICENSE for details.
