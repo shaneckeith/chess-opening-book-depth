@@ -130,4 +130,4 @@ bands.
 
 ## License
 
-Data used under Lichess's CC0 license. Code license: Code is released under the MIT License; see LICENSE for details.
+Data used under Lichess's CC0 license. Code is released under the MIT License; see LICENSE for details.
