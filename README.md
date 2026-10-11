@@ -5,8 +5,8 @@ from known opening theory (the "Book Breaker") wins less often than their
 opponent, and whether the depth of that departure predicts the outcome
 differently across skill levels.
 
-**Full writeup, methodology, and findings:** see the capstone report (link to
-be added once published).
+**Methodology and run history:** see [`RUNLOG.md`](RUNLOG.md), which records
+every script run, its parameters, and its results..
 
 ## Research question
 
@@ -33,10 +33,11 @@ below.
 
 A logistic regression (`breaker_won ~ book_depth_plies`) was fit separately
 for each rating band, supplemented by a likelihood ratio test and a
-chi-square test to formally compare effects across bands. Full details,
-including two structural limitations discovered during assumption
-verification (a color confound and a linearity violation in the depth
-predictor), are documented in the capstone report and in `RUNLOG.md`.
+chi-square test to formally compare effects across bands. 
+Two structural limitations were discovered during assumption verification
+(a color confound and a linearity violation in the depth predictor); the
+scripts that test them are listed under "Assumption verification" below, and
+the results are recorded in `RUNLOG.md`..
 
 ## Repository structure
 
@@ -117,8 +118,8 @@ for the final reported results.
 
 ## Findings
 
-Full results, statistical significance, practical significance, and named
-limitations are reported in the capstone document. In brief: the Book
+Results are summarized here; exact coefficients and test output are in
+`RUNLOG.md` and the `*_log.txt` files. In brief: the Book
 Breaker's win rate was below 50% in all four bands (statistically
 significant), and book depth was a significant predictor of outcome in
 three of four bands, with a non-monotonic effect size across bands. Two
